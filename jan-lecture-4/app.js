@@ -1,10 +1,13 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const userSchema = require("./userSchema");
+
+//file imports
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-const mongoURI = `mongodb+srv://karan:12345@cluster0.3ije6wh.mongodb.net/demo`;
+const mongoURI = `mongodb+srv://karan:12345@cluster0.3ije6wh.mongodb.net/demo1`;
 
 mongoose.set("strictQuery", false);
 mongoose
@@ -67,14 +70,33 @@ app.get("/form", (req, res) => {
   `);
 });
 
-app.post("/submit_form", (req, res) => {
+app.post("/submit_form", async (req, res) => {
   console.log(req.body);
-
-  return res.send({
-    status: 200,
-    message: "Form submitted successfully",
-    data: req.body,
+  const { name, email, password } = req.body;
+  //create a user in db
+  //{ name: 'sss', email: 'ssss', password: 'sssss' }
+  let user = new userSchema({
+    name: name,
+    email: email,
+    password: password,
   });
+
+  try {
+    const userDb = await user.save();
+    console.log(userDb);
+
+    return res.send({
+      status: 200,
+      message: "User created successfully",
+      data: userDb,
+    });
+  } catch (error) {
+    return res.send({
+      status: 400,
+      message: "Error occured",
+      error: error,
+    });
+  }
 });
 
 app.listen(PORT, () => {
